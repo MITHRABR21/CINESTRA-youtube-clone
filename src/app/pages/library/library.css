@@ -1,0 +1,261 @@
+:host {
+  display: block;
+}
+
+.library-page {
+  max-width: 1800px;
+  margin: 0 auto;
+}
+
+.page-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  padding-bottom: 24px;
+  border-bottom: 1px solid var(--border);
+}
+
+.eyebrow {
+  color: var(--accent-hover);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 2px;
+}
+
+.page-heading h1 {
+  margin: 8px 0;
+  font-size: clamp(26px, 3vw, 36px);
+  line-height: 1.2;
+}
+
+.page-heading p {
+  margin: 0;
+  color: var(--text-muted);
+  font-size: 13px;
+}
+
+.primary-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  padding: 11px 18px;
+  border: 0;
+  border-radius: 10px;
+  background: var(--accent);
+  color: white;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.primary-button:hover {
+  background: var(--accent-hover);
+}
+
+.library-tabs {
+  display: flex;
+  gap: 9px;
+  margin: 24px 0;
+  padding: 2px 2px 10px;
+  overflow-x: auto;
+}
+
+.tab-button {
+  flex-shrink: 0;
+  padding: 9px 17px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--surface);
+  color: var(--text-muted);
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.tab-button:hover {
+  background: var(--surface-raised);
+  color: var(--text);
+}
+
+.tab-button.active {
+  border-color: var(--accent);
+  background: var(--accent);
+  color: white;
+}
+
+.section-heading {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 22px;
+}
+
+.section-heading h2 {
+  margin: 0;
+  font-size: 21px;
+}
+
+.section-heading > span {
+  color: var(--text-muted);
+  font-size: 12px;
+}
+
+.section-heading .text-button {
+  margin-left: auto;
+}
+
+.video-grid,
+.playlist-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 30px 20px;
+}
+
+.library-video,
+.playlist-card {
+  min-width: 0;
+}
+
+.text-button {
+  padding: 5px 0;
+  border: 0;
+  background: transparent;
+  color: var(--lavender);
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.text-button:hover {
+  color: var(--accent-hover);
+}
+
+.remove-button {
+  margin-top: 10px;
+}
+
+.playlist-card {
+  overflow: hidden;
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  background: var(--surface);
+}
+
+.playlist-cover {
+  position: relative;
+  display: block;
+  overflow: hidden;
+  aspect-ratio: 16 / 9;
+  background: linear-gradient(135deg, var(--purple), var(--surface));
+}
+
+.playlist-cover img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 180ms ease;
+}
+
+.playlist-cover:hover img {
+  transform: scale(1.035);
+}
+
+.playlist-placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  color: var(--lavender);
+}
+
+.playlist-placeholder svg {
+  width: 54px;
+  height: 54px;
+}
+
+.playlist-count {
+  position: absolute;
+  right: 10px;
+  bottom: 10px;
+  padding: 4px 8px;
+  border-radius: 6px;
+  background: rgba(23, 15, 35, 0.9);
+  color: white;
+  font-size: 12px;
+}
+
+.playlist-details {
+  padding: 16px;
+}
+
+.playlist-name {
+  display: block;
+  font-size: 16px;
+  font-weight: 700;
+  overflow-wrap: anywhere;
+}
+
+.playlist-name:hover {
+  color: var(--accent-hover);
+}
+
+.playlist-details p {
+  margin: 8px 0;
+  color: var(--text-muted);
+  font-size: 12px;
+  overflow-wrap: anywhere;
+}
+
+.delete-button {
+  margin-top: 10px;
+}
+
+.empty-state {
+  padding: 60px 20px;
+  border: 1px dashed var(--border);
+  border-radius: 16px;
+  text-align: center;
+}
+
+.empty-state h3 {
+  margin: 0 0 10px;
+  font-size: 20px;
+}
+
+.empty-state p {
+  margin: 0;
+  color: var(--text-muted);
+  font-size: 13px;
+}
+
+.empty-state .primary-button {
+  margin-top: 22px;
+}
+
+@media (min-width: 1600px) {
+  .video-grid,
+  .playlist-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 1150px) {
+  .video-grid,
+  .playlist-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 650px) {
+  .page-heading {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .video-grid,
+  .playlist-grid {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 26px;
+  }
+}

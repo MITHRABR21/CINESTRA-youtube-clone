@@ -1,0 +1,116 @@
+<section class="home-page" aria-labelledby="home-heading">
+  <div class="page-heading">
+    <div>
+      <span class="eyebrow">YOUR DAILY DISCOVERY</span>
+      <h1 id="home-heading">Find your next favourite.</h1>
+      <p>Explore popular videos from YouTube in India.</p>
+    </div>
+
+    <span class="heading-badge">Powered by YouTube</span>
+  </div>
+
+  <div class="category-bar" aria-label="Video categories">
+    @for (category of videoService.categories; track category) {
+      <button
+        type="button"
+        class="category-chip"
+        [class.active]="selectedCategory() === category"
+        [attr.aria-pressed]="selectedCategory() === category"
+        (click)="selectCategory(category)"
+      >
+        {{ category }}
+      </button>
+    }
+  </div>
+
+  <div class="feed-heading">
+    <h2>
+      {{ selectedCategory() === 'All' ? 'Popular now' : selectedCategory() }}
+    </h2>
+    <span>Discover something worth watching</span>
+  </div>
+
+  @if (error()) {
+    <div class="error-panel" role="alert">
+      <div>
+        <h3>Could not load videos</h3>
+        <p>{{ error() }}</p>
+      </div>
+
+      <button
+        type="button"
+        class="retry-button"
+        [disabled]="isLoading() || isLoadingMore()"
+        (click)="retry()"
+      >
+        Try again
+      </button>
+    </div>
+  }
+
+  <div class="video-feed" [attr.aria-busy]="isLoading()">
+    @if (isLoading()) {
+      <p class="visually-hidden" role="status">Loading videos...</p>
+
+      <div class="video-grid" aria-hidden="true">
+        @for (skeleton of skeletons; track skeleton) {
+          <div class="skeleton-card">
+            <div class="skeleton-thumbnail"></div>
+
+            <div class="skeleton-details">
+              <div class="skeleton-avatar"></div>
+
+              <div class="skeleton-copy">
+                <div class="skeleton-line"></div>
+                <div class="skeleton-line short"></div>
+                <div class="skeleton-line shorter"></div>
+              </div>
+            </div>
+          </div>
+        }
+      </div>
+    } @else {
+      <div class="video-grid">
+        @for (video of videos(); track video.id) {
+          <app-video-card [video]="video"></app-video-card>
+        }
+      </div>
+
+      @if (!videos().length && !error()) {
+        <div class="empty-state">
+          <h3>No videos available in this category</h3>
+          <p>Choose another category to keep exploring.</p>
+
+          @if (selectedCategory() !== 'All') {
+            <button
+              type="button"
+              class="retry-button"
+              (click)="selectCategory('All')"
+            >
+              Explore all
+            </button>
+          }
+        </div>
+      }
+
+      @if (nextPageToken()) {
+        <div class="load-more-container">
+          <button
+            type="button"
+            class="load-more-button"
+            [disabled]="isLoadingMore()"
+            (click)="loadMore()"
+          >
+            {{ isLoadingMore() ? 'Loading...' : 'Load more videos' }}
+          </button>
+        </div>
+      }
+
+      @if (isLoadingMore()) {
+        <p class="visually-hidden" role="status">
+          Loading more videos...
+        </p>
+      }
+    }
+  </div>
+</section>

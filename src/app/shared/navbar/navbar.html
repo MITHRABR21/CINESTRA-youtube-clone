@@ -1,0 +1,135 @@
+<header class="navbar">
+  <div class="navbar-brand">
+    <button
+      type="button"
+      class="icon-button menu-button"
+      aria-label="Toggle navigation menu"
+      aria-controls="primary-sidebar"
+      [attr.aria-expanded]="
+        ui.mobileMenuOpen() || ui.sidebarExpanded()
+      "
+      (click)="toggleMenu()"
+    >
+      <svg
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="1.8"
+        aria-hidden="true"
+      >
+        <path d="M4 6h16M4 12h16M4 18h16" />
+      </svg>
+    </button>
+
+    <a routerLink="/" class="brand" aria-label="Cinestra home">
+      <span class="brand-mark" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="currentColor">
+          <path d="M9 5.5v13l10-6.5z" />
+        </svg>
+      </span>
+
+      <span class="brand-copy">
+        <span class="brand-name">CINESTRA</span>
+        <span class="brand-tagline">Your screen. Your choice.</span>
+      </span>
+    </a>
+  </div>
+
+  <form
+    class="search-form"
+    role="search"
+    aria-label="Search videos"
+    (submit)="submitSearch($event)"
+  >
+    <div class="search-field">
+      <svg
+        class="search-leading-icon"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="1.8"
+        aria-hidden="true"
+      >
+        <circle cx="10.5" cy="10.5" r="6.5" />
+        <path d="m16 16 4.5 4.5" />
+      </svg>
+
+      <input
+        type="search"
+        name="q"
+        aria-label="Search videos, music and more"
+        placeholder="Search videos, music and more..."
+        autocomplete="off"
+        [value]="searchQuery()"
+        (input)="onSearchInput($event)"
+      />
+
+      @if (searchQuery()) {
+        <button
+          type="button"
+          class="clear-search"
+          aria-label="Clear search"
+          (click)="clearSearch()"
+        >
+          <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.8"
+            aria-hidden="true"
+          >
+            <path d="m6 6 12 12M18 6 6 18" />
+          </svg>
+        </button>
+      }
+    </div>
+
+    <button
+      type="submit"
+      class="search-submit"
+      aria-label="Submit search"
+      [disabled]="!searchQuery().trim()"
+    >
+      <svg
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="1.8"
+        aria-hidden="true"
+      >
+        <circle cx="10.5" cy="10.5" r="6.5" />
+        <path d="m16 16 4.5 4.5" />
+      </svg>
+    </button>
+  </form>
+
+  <div class="navbar-actions">
+    <a
+      routerLink="/library"
+      class="library-link icon-button"
+      aria-label="Open your library"
+      title="Your library"
+    >
+      <svg
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="1.8"
+        aria-hidden="true"
+      >
+        <rect x="5" y="6" width="15" height="15" rx="2" />
+        <path d="M3 16V4a1 1 0 0 1 1-1h12" />
+        <path d="m11 10 5 3.5-5 3.5z" />
+      </svg>
+    </a>
+
+    <a
+      routerLink="/library"
+      class="profile-link"
+      aria-label="Open your personal library"
+      title="Your space"
+    >
+      <span aria-hidden="true">C</span>
+    </a>
+  </div>
+</header>

@@ -1,0 +1,182 @@
+<section class="watch-page">
+  @if (isLoading()) {
+    <div class="loading-state" role="status">
+      <p>Loading video...</p>
+    </div>
+  } @else if (error()) {
+    <div class="error-panel" role="alert">
+      <h1>Could not open this video</h1>
+      <p>{{ error() }}</p>
+
+      <div class="error-actions">
+        <button type="button" class="action-button" (click)="retry()">
+          Try again
+        </button>
+        <a routerLink="/" class="action-button">Back to home</a>
+      </div>
+    </div>
+  } @else if (video(); as current) {
+    <div class="watch-layout">
+      <div class="watch-main">
+        <div class="player-container">
+          @if (playerUrl(); as url) {
+            <iframe
+              [src]="url"
+              [title]="current.title"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+              referrerpolicy="strict-origin-when-cross-origin"
+              allowfullscreen
+            ></iframe>
+          }
+        </div>
+
+        <h1 class="video-title">{{ current.title }}</h1>
+
+        <div class="video-toolbar">
+          <a
+            class="channel-link"
+            [routerLink]="['/channel', current.channelId]"
+          >
+            <span class="channel-avatar">
+              @if (current.channelAvatarUrl) {
+                <img [src]="current.channelAvatarUrl" alt="" />
+              } @else {
+                <span aria-hidden="true">{{ channelInitial() }}</span>
+              }
+            </span>
+
+            <span class="channel-copy">
+              <span class="channel-name">{{ current.channelName }}</span>
+              <span class="channel-caption">View channel</span>
+            </span>
+          </a>
+
+          <div class="video-actions">
+            <button
+              type="button"
+              class="action-button"
+              [class.active]="library.isLiked(current.id)"
+              [attr.aria-pressed]="library.isLiked(current.id)"
+              (click)="toggleLike()"
+            >
+              {{ library.isLiked(current.id) ? 'Liked' : 'Like' }}
+            </button>
+
+            <button
+              type="button"
+              class="action-button"
+              [class.active]="library.isInWatchLater(current.id)"
+              [attr.aria-pressed]="library.isInWatchLater(current.id)"
+              (click)="toggleWatchLater()"
+            >
+              {{
+                library.isInWatchLater(current.id)
+                  ? 'Saved for later'
+                  : 'Watch later'
+              }}
+            </button>
+
+            <div class="playlist-control">
+              <button
+                type="button"
+                class="action-button"
+                aria-controls="watch-playlist-panel"
+                [attr.aria-expanded]="playlistMenuOpen()"
+                (click)="togglePlaylistMenu()"
+              >
+                Save to playlist
+              </button>
+
+              @if (playlistMenuOpen()) {
+                <div
+                  id="watch-playlist-panel"
+                  class="playlist-panel"
+                  aria-label="Save to playlist"
+                >
+                  <h2>Your playlists</h2>
+
+                  @for (playlist of library.playlists(); track playlist.id) {
+                    <button
+                      type="button"
+                      class="playlist-option"
+                      [disabled]="library.isInPlaylist(playlist.id, current.id)"
+                      (click)="addToPlaylist(playlist.id)"
+                    >
+                      <span>{{ playlist.name }}</span>
+
+                      @if (library.isInPlaylist(playlist.id, current.id)) {
+                        <span class="saved-label">Saved</span>
+                      }
+                    </button>
+                  } @empty {
+                    <p class="playlist-empty">Create your first playlist.</p>
+                  }
+
+                  <button
+                    type="button"
+                    class="create-playlist-button"
+                    (click)="createPlaylist()"
+                  >
+                    + Create playlist
+                  </button>
+                </div>
+              }
+            </div>
+
+            <a
+              class="action-button youtube-link"
+              [href]="'https://www.youtube.com/watch?v=' + current.youtubeId"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              Open on YouTube ↗
+            </a>
+          </div>
+        </div>
+
+        @if (notice()) {
+          <p class="notice" role="status">{{ notice() }}</p>
+        }
+
+        <div class="description-panel">
+          <div class="video-meta">
+            <span>{{ formatViews(current.viewCount) }}</span>
+            <span>{{ formatDate(current.publishedAt) }}</span>
+          </div>
+
+          <p
+            id="video-description"
+            class="description-text"
+            [class.expanded]="descriptionExpanded()"
+          >
+            {{ current.description || 'No description provided.' }}
+          </p>
+
+          @if (current.description) {
+            <button
+              type="button"
+              class="description-toggle"
+              aria-controls="video-description"
+              [attr.aria-expanded]="descriptionExpanded()"
+              (click)="toggleDescription()"
+            >
+              {{ descriptionExpanded() ? 'Show less' : 'Show more' }}
+            </button>
+          }
+        </div>
+      </div>
+
+      @if (recommendations().length) {
+        <aside class="recommendations" aria-labelledby="recommendations-heading">
+          <h2 id="recommendations-heading">Explore more</h2>
+
+          <div class="recommendation-list">
+            @for (item of recommendations(); track item.id) {
+              <app-video-card [video]="item"></app-video-card>
+            }
+          </div>
+        </aside>
+      }
+    </div>
+  }
+</section>

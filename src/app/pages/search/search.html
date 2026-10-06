@@ -1,0 +1,79 @@
+<section class="search-page" aria-labelledby="search-heading">
+  <div class="page-heading">
+    <span class="eyebrow">EXPLORE YOUR INTERESTS</span>
+
+    <h1 id="search-heading">
+      @if (query()) {
+        Results for “{{ query() }}”
+      } @else {
+        Find something you love.
+      }
+    </h1>
+
+    <p>Search videos, music, tutorials and more on YouTube.</p>
+  </div>
+
+  @if (error()) {
+    <div class="error-panel" role="alert">
+      <div>
+        <h2>Could not load search results</h2>
+        <p>{{ error() }}</p>
+      </div>
+
+      <button
+        type="button"
+        class="action-button"
+        [disabled]="isLoading() || isLoadingMore()"
+        (click)="retry()"
+      >
+        Try again
+      </button>
+    </div>
+  }
+
+  <div class="results" [attr.aria-busy]="isLoading()">
+    @if (isLoading()) {
+      <div class="loading-state" role="status">
+        <span class="loading-spinner" aria-hidden="true"></span>
+        <p>Searching YouTube...</p>
+      </div>
+    } @else if (!query()) {
+      <div class="empty-state">
+        <h2>Your next discovery starts here.</h2>
+        <p>Type something in the search bar and press Enter.</p>
+      </div>
+    } @else {
+      <div class="video-grid">
+        @for (video of videos(); track video.id) {
+          <app-video-card [video]="video"></app-video-card>
+        }
+      </div>
+
+      @if (!videos().length && !error()) {
+        <div class="empty-state">
+          <h2>No results found</h2>
+          <p>Try another spelling or a different search phrase.</p>
+        </div>
+      }
+
+      @if (nextPageToken()) {
+        <div class="load-more-container">
+          <button
+            type="button"
+            class="action-button"
+            [disabled]="isLoadingMore()"
+            (click)="loadMore()"
+          >
+            {{ isLoadingMore() ? 'Loading...' : 'Load more results' }}
+          </button>
+        </div>
+      }
+
+      @if (isLoadingMore()) {
+        <p class="loading-message" role="status">
+          Loading more results...
+        </p>
+      }
+    }
+  </div>
+</section>

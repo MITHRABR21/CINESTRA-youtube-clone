@@ -1,12 +1,17 @@
-import { Component, signal } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
+
+import { Navbar } from './shared/navbar/navbar';
+import { Sidebar } from './shared/sidebar/sidebar';
+import { UiService } from './core/services/ui';
 
 @Component({
   selector: 'app-root',
-  imports: [RouterOutlet],
+  standalone: true,
+  imports: [RouterOutlet, Navbar, Sidebar],
   templateUrl: './app.html',
   styleUrl: './app.css'
 })
 export class App {
-  protected readonly title = signal('cinestra');
+  readonly ui = inject(UiService);
 }

@@ -1,0 +1,120 @@
+<section class="playlist-page">
+  @if (playlist(); as current) {
+    <div class="playlist-header">
+      <div class="playlist-cover">
+        @if (current.videos.length) {
+          <img
+            [src]="current.videos[0].thumbnailUrl"
+            alt=""
+          />
+        } @else {
+          <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.8"
+            stroke-linecap="round"
+            aria-hidden="true"
+          >
+            <path d="M4 6h16M4 11h11M4 16h8m5-2 5 3-5 3z" />
+          </svg>
+        }
+      </div>
+
+      <div class="playlist-info">
+        <span class="eyebrow">YOUR PLAYLIST</span>
+        <h1>{{ current.name }}</h1>
+
+        @if (current.description) {
+          <p class="playlist-description">{{ current.description }}</p>
+        }
+
+        <div class="playlist-meta">
+          <span>{{ current.videos.length }} videos</span>
+
+          @if (totalDuration()) {
+            <span>· {{ totalDuration() }}</span>
+          }
+
+          <span>· Updated {{ formatDate(current.updatedAt) }}</span>
+        </div>
+
+        <div class="playlist-actions">
+          @if (current.videos.length) {
+            <button
+              type="button"
+              class="primary-button"
+              (click)="playFirst()"
+            >
+              ▶ Play first video
+            </button>
+          }
+
+          <button
+            type="button"
+            class="action-button"
+            (click)="renamePlaylist()"
+          >
+            Rename
+          </button>
+
+          <button
+            type="button"
+            class="action-button delete-button"
+            (click)="deletePlaylist()"
+          >
+            Delete playlist
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div class="section-heading">
+      <h2>Videos in this playlist</h2>
+      <a
+        routerLink="/library"
+        [queryParams]="{ section: 'playlists' }"
+        class="text-link"
+      >
+        Back to playlists
+      </a>
+    </div>
+
+    <div class="video-grid">
+      @for (video of current.videos; track video.id) {
+        <div class="playlist-video">
+          <app-video-card [video]="video"></app-video-card>
+
+          <button
+            type="button"
+            class="remove-button"
+            [attr.aria-label]="'Remove ' + video.title + ' from playlist'"
+            (click)="removeVideo(video)"
+          >
+            Remove from playlist
+          </button>
+        </div>
+      }
+    </div>
+
+    @if (!current.videos.length) {
+      <div class="empty-state">
+        <h2>Your playlist is ready for its first video.</h2>
+        <p>Open a video and use “Save to playlist” to add it here.</p>
+        <a routerLink="/" class="primary-button">Explore videos</a>
+      </div>
+    }
+  } @else {
+    <div class="empty-state">
+      <h1>Playlist not found</h1>
+      <p>This playlist may have been deleted or belongs to another browser.</p>
+      <a
+        routerLink="/library"
+        [queryParams]="{ section: 'playlists' }"
+        class="primary-button"
+      >
+        Go to your playlists
+      </a>
+    </div>
+  }
+</section>

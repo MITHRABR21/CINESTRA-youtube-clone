@@ -1,0 +1,117 @@
+<article class="video-card">
+  <div class="thumbnail-container">
+    <a
+      class="thumbnail-link"
+      [routerLink]="['/watch', video().youtubeId]"
+      [attr.aria-label]="'Watch ' + video().title"
+    >
+      <img
+        class="thumbnail"
+        [src]="video().thumbnailUrl"
+        [alt]="video().title"
+        loading="lazy"
+        decoding="async"
+      />
+
+      <span class="play-overlay" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="currentColor">
+          <path d="m9 5 11 7-11 7z" />
+        </svg>
+      </span>
+
+      @if (video().durationSeconds !== null) {
+        <span class="duration">
+          {{ formatDuration(video().durationSeconds) }}
+        </span>
+      }
+    </a>
+
+    <button
+      type="button"
+      class="watch-later-button"
+      [class.saved]="library.isInWatchLater(video().id)"
+      [attr.aria-pressed]="library.isInWatchLater(video().id)"
+      [attr.aria-label]="
+        library.isInWatchLater(video().id)
+          ? 'Remove from Watch later'
+          : 'Save to Watch later'
+      "
+      [title]="
+        library.isInWatchLater(video().id)
+          ? 'Remove from Watch later'
+          : 'Save to Watch later'
+      "
+      (click)="toggleWatchLater()"
+    >
+      <svg
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="1.8"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        aria-hidden="true"
+      >
+        @if (library.isInWatchLater(video().id)) {
+          <path d="m5 12 4 4L19 6" />
+        } @else {
+          <circle cx="12" cy="12" r="9" />
+          <path d="M12 7v5l3 2" />
+        }
+      </svg>
+    </button>
+  </div>
+
+  <div class="video-details">
+    <a
+      class="channel-avatar"
+      [routerLink]="['/channel', video().channelId]"
+      [attr.aria-label]="'Open ' + video().channelName"
+    >
+      @if (video().channelAvatarUrl) {
+        <img
+          [src]="video().channelAvatarUrl"
+          alt=""
+          loading="lazy"
+          decoding="async"
+        />
+      } @else {
+        <span aria-hidden="true">{{ channelInitial() }}</span>
+      }
+    </a>
+
+    <div class="video-info">
+      <a
+        class="video-title"
+        [routerLink]="['/watch', video().youtubeId]"
+        [title]="video().title"
+      >
+        {{ video().title }}
+      </a>
+
+      <a
+        class="channel-name"
+        [routerLink]="['/channel', video().channelId]"
+      >
+        {{ video().channelName }}
+      </a>
+
+      <div class="video-meta">
+        @if (video().viewCount !== null) {
+          <span>{{ formatViews(video().viewCount) }}</span>
+        }
+
+        @if (
+          video().viewCount !== null &&
+          formatPublishedAt(video().publishedAt)
+        ) {
+          <span aria-hidden="true">·</span>
+        }
+
+        @if (formatPublishedAt(video().publishedAt)) {
+          <span>{{ formatPublishedAt(video().publishedAt) }}</span>
+        }
+      </div>
+    </div>
+  </div>
+</article>

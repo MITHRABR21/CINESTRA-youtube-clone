@@ -1,0 +1,152 @@
+<section class="library-page" aria-labelledby="library-heading">
+  <div class="page-heading">
+    <div>
+      <span class="eyebrow">YOUR PERSONAL COLLECTION</span>
+      <h1 id="library-heading">Your library</h1>
+      <p>Your history, favourites and playlists—all in one place.</p>
+    </div>
+
+    <button
+      type="button"
+      class="primary-button"
+      (click)="createPlaylist()"
+    >
+      + Create playlist
+    </button>
+  </div>
+
+  <nav class="library-tabs" aria-label="Library sections">
+    @for (tab of tabs; track tab.id) {
+      <button
+        type="button"
+        class="tab-button"
+        [class.active]="section() === tab.id"
+        [attr.aria-pressed]="section() === tab.id"
+        (click)="selectSection(tab.id)"
+      >
+        {{ tab.label }}
+      </button>
+    }
+  </nav>
+
+  <div class="section-heading">
+    <h2>{{ sectionTitle() }}</h2>
+
+    @if (section() === 'playlists') {
+      <span>{{ library.playlists().length }} playlists</span>
+    } @else {
+      <span>{{ currentVideos().length }} videos</span>
+    }
+
+    @if (section() === 'history' && currentVideos().length) {
+      <button
+        type="button"
+        class="text-button"
+        (click)="clearHistory()"
+      >
+        Clear history
+      </button>
+    }
+  </div>
+
+  @if (section() === 'playlists') {
+    <div class="playlist-grid">
+      @for (playlist of library.playlists(); track playlist.id) {
+        <article class="playlist-card">
+          <a
+            class="playlist-cover"
+            [routerLink]="['/playlist', playlist.id]"
+            [attr.aria-label]="'Open playlist ' + playlist.name"
+          >
+            @if (playlist.videos.length) {
+              <img
+                [src]="playlist.videos[0].thumbnailUrl"
+                alt=""
+                loading="lazy"
+              />
+            } @else {
+              <span class="playlist-placeholder" aria-hidden="true">
+                <svg
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="1.8"
+                  stroke-linecap="round"
+                >
+                  <path d="M4 6h16M4 11h11M4 16h8m5-2 5 3-5 3z" />
+                </svg>
+              </span>
+            }
+
+            <span class="playlist-count">
+              {{ playlist.videos.length }} videos
+            </span>
+          </a>
+
+          <div class="playlist-details">
+            <a
+              class="playlist-name"
+              [routerLink]="['/playlist', playlist.id]"
+            >
+              {{ playlist.name }}
+            </a>
+
+            @if (playlist.description) {
+              <p>{{ playlist.description }}</p>
+            }
+
+            <button
+              type="button"
+              class="text-button delete-button"
+              [attr.aria-label]="'Delete playlist ' + playlist.name"
+              (click)="deletePlaylist(playlist)"
+            >
+              Delete playlist
+            </button>
+          </div>
+        </article>
+      }
+    </div>
+
+    @if (!library.playlists().length) {
+      <div class="empty-state">
+        <h3>No playlists yet</h3>
+        <p>{{ emptyMessage() }}</p>
+        <button
+          type="button"
+          class="primary-button"
+          (click)="createPlaylist()"
+        >
+          Create playlist
+        </button>
+      </div>
+    }
+  } @else {
+    <div class="video-grid">
+      @for (video of currentVideos(); track video.id) {
+        <div class="library-video">
+          <app-video-card [video]="video"></app-video-card>
+
+          <button
+            type="button"
+            class="text-button remove-button"
+            [attr.aria-label]="
+              'Remove ' + video.title + ' from ' + sectionTitle()
+            "
+            (click)="removeVideo(video)"
+          >
+            Remove
+          </button>
+        </div>
+      }
+    </div>
+
+    @if (!currentVideos().length) {
+      <div class="empty-state">
+        <h3>No videos here yet</h3>
+        <p>{{ emptyMessage() }}</p>
+        <a routerLink="/" class="primary-button">Explore videos</a>
+      </div>
+    }
+  }
+</section>

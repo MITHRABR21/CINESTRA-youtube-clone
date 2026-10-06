@@ -1,0 +1,103 @@
+<section class="channel-page" aria-labelledby="channel-heading">
+  <div class="channel-banner" aria-hidden="true">
+    <span class="banner-wordmark">CINESTRA</span>
+    <span class="banner-tagline">Discover the people behind the stories.</span>
+  </div>
+
+  <div class="channel-header">
+    <div class="channel-avatar">
+      @if (channelAvatar()) {
+        <img [src]="channelAvatar()" alt="" />
+      } @else {
+        <span aria-hidden="true">{{ channelInitial() }}</span>
+      }
+    </div>
+
+    <div class="channel-info">
+      <span class="eyebrow">YOUTUBE CHANNEL</span>
+      <h1 id="channel-heading">{{ channelName() }}</h1>
+      <p>Explore this channel’s latest embeddable videos.</p>
+    </div>
+
+    <a
+      class="youtube-button"
+      [href]="youtubeUrl()"
+      target="_blank"
+      rel="noopener noreferrer"
+    >
+      View on YouTube ↗
+    </a>
+  </div>
+
+  <div class="section-heading">
+    <h2>Videos</h2>
+    <span>Latest uploads</span>
+  </div>
+
+  @if (error()) {
+    <div class="error-panel" role="alert">
+      <div>
+        <h3>Could not load channel videos</h3>
+        <p>{{ error() }}</p>
+      </div>
+
+      <button
+        type="button"
+        class="action-button"
+        [disabled]="isLoading() || isLoadingMore()"
+        (click)="retry()"
+      >
+        Try again
+      </button>
+    </div>
+  }
+
+  <div class="channel-feed" [attr.aria-busy]="isLoading()">
+    @if (isLoading()) {
+      <div class="loading-state" role="status">
+        <span class="loading-spinner" aria-hidden="true"></span>
+        <p>Loading channel videos...</p>
+      </div>
+    } @else {
+      <div class="video-grid">
+        @for (video of videos(); track video.id) {
+          <app-video-card [video]="video"></app-video-card>
+        }
+      </div>
+
+      @if (!videos().length && !error()) {
+        <div class="empty-state">
+          <h3>No embeddable videos found</h3>
+          <p>You can explore this channel directly on YouTube.</p>
+          <a
+            class="youtube-button"
+            [href]="youtubeUrl()"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            Open channel ↗
+          </a>
+        </div>
+      }
+
+      @if (nextPageToken()) {
+        <div class="load-more-container">
+          <button
+            type="button"
+            class="action-button"
+            [disabled]="isLoadingMore()"
+            (click)="loadMore()"
+          >
+            {{ isLoadingMore() ? 'Loading...' : 'Load more videos' }}
+          </button>
+        </div>
+      }
+
+      @if (isLoadingMore()) {
+        <p class="loading-message" role="status">
+          Loading more videos...
+        </p>
+      }
+    }
+  </div>
+</section>

@@ -1,0 +1,140 @@
+@if (ui.mobileMenuOpen()) {
+  <button
+    type="button"
+    class="sidebar-backdrop"
+    aria-label="Close navigation menu"
+    (click)="closeMenu()"
+  ></button>
+}
+
+<aside
+  id="primary-sidebar"
+  class="sidebar"
+  [class.collapsed]="!ui.sidebarExpanded()"
+  [class.mobile-open]="ui.mobileMenuOpen()"
+  aria-label="Main navigation"
+>
+  <nav class="navigation">
+    <div class="nav-group">
+      @for (link of mainLinks; track link.route) {
+        <a
+          class="nav-link"
+          [routerLink]="link.route"
+          routerLinkActive="active"
+          [routerLinkActiveOptions]="{ exact: link.exact }"
+          ariaCurrentWhenActive="page"
+          [title]="link.label"
+          (click)="closeMenu()"
+        >
+          <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.8"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            aria-hidden="true"
+          >
+            @switch (link.icon) {
+              @case ('home') {
+                <path d="m3 10 9-7 9 7v10a1 1 0 0 1-1 1h-5v-7H9v7H4a1 1 0 0 1-1-1z" />
+              }
+              @case ('shorts') {
+                <path d="m15 3-8 5a3 3 0 0 0 0 5l2 1-2 1a3 3 0 0 0 3 5l8-5a3 3 0 0 0 0-5l-2-1 2-1a3 3 0 0 0-3-5z" />
+                <path d="m10 9 5 3-5 3z" />
+              }
+              @case ('library') {
+                <rect x="6" y="6" width="15" height="15" rx="2" />
+                <path d="M3 17V3h14M11 10l5 3-5 3z" />
+              }
+            }
+          </svg>
+
+          <span class="nav-label">{{ link.label }}</span>
+        </a>
+      }
+    </div>
+
+    <div class="nav-group collection-group">
+      <h2 class="group-heading">Your space</h2>
+
+      @for (link of collectionLinks; track link.section) {
+        <a
+          class="nav-link"
+          routerLink="/library"
+          [queryParams]="{ section: link.section }"
+          [title]="link.label"
+          (click)="closeMenu()"
+        >
+          <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.8"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            aria-hidden="true"
+          >
+            @switch (link.icon) {
+              @case ('history') {
+                <path d="M3 11a9 9 0 1 1 2.5 7M3 4v7h7" />
+                <path d="M12 7v5l3 2" />
+              }
+              @case ('clock') {
+                <circle cx="12" cy="12" r="9" />
+                <path d="M12 7v5l3 2" />
+              }
+              @case ('heart') {
+                <path d="M20.5 5.5a5 5 0 0 0-7 0L12 7l-1.5-1.5a5 5 0 0 0-7 7L12 21l8.5-8.5a5 5 0 0 0 0-7z" />
+              }
+              @case ('playlist') {
+                <path d="M4 6h16M4 11h11M4 16h8M18 14v7M14.5 17.5h7" />
+              }
+            }
+          </svg>
+
+          <span class="nav-label">{{ link.label }}</span>
+        </a>
+      }
+    </div>
+
+    @if (library.playlists().length) {
+      <div class="nav-group playlist-group">
+        <h2 class="group-heading">Your playlists</h2>
+
+        @for (playlist of library.playlists(); track playlist.id) {
+          <a
+            class="nav-link"
+            [routerLink]="['/playlist', playlist.id]"
+            routerLinkActive="active"
+            ariaCurrentWhenActive="page"
+            [title]="playlist.name"
+            (click)="closeMenu()"
+          >
+            <svg
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.8"
+              stroke-linecap="round"
+              aria-hidden="true"
+            >
+              <path d="M4 6h16M4 11h11M4 16h8" />
+              <path d="m17 14 5 3-5 3z" />
+            </svg>
+
+            <span class="nav-label playlist-name">
+              {{ playlist.name }}
+            </span>
+          </a>
+        }
+      </div>
+    }
+  </nav>
+
+  <div class="sidebar-footer">
+    <span class="footer-brand">CINESTRA</span>
+    <p>Your screen. Your choice.</p>
+    <span class="footer-note">Videos powered by YouTube</span>
+  </div>
+</aside>

@@ -1,0 +1,187 @@
+<section class="shorts-page">
+  <header class="shorts-header">
+    <div>
+      <p class="eyebrow">A LITTLE ESCAPE</p>
+      <h1>Shorts</h1>
+      <p class="page-description">
+        Quick discoveries, one video at a time.
+      </p>
+    </div>
+
+    <a routerLink="/" class="browse-link">
+      Browse videos
+    </a>
+  </header>
+
+  @if (error()) {
+    <div class="error-message" role="alert">
+      <p>{{ error() }}</p>
+      <button type="button" (click)="retry()">
+        Try again
+      </button>
+    </div>
+  }
+
+  @if (isLoading()) {
+    <div class="loading-state" role="status">
+      <span class="loading-spinner" aria-hidden="true"></span>
+      <p>Finding your next short...</p>
+    </div>
+  } @else {
+    @if (currentVideo(); as video) {
+      <div class="shorts-layout">
+        <div class="short-player-column">
+          <div class="short-player">
+            @if (playerUrl(); as url) {
+              <iframe
+                [src]="url"
+                [title]="video.title"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                referrerpolicy="strict-origin-when-cross-origin"
+                allowfullscreen
+              ></iframe>
+            }
+          </div>
+
+          <nav
+            class="short-navigation"
+            aria-label="Short video navigation"
+          >
+            <button
+              type="button"
+              class="navigation-button"
+              [disabled]="!canGoPrevious() || isLoadingMore()"
+              (click)="previous()"
+            >
+              <span aria-hidden="true">↑</span>
+              Previous
+            </button>
+
+            <span class="video-position" aria-live="polite">
+              {{ currentIndex() + 1 }} / {{ videos().length }}
+            </span>
+
+            <button
+              type="button"
+              class="navigation-button"
+              [disabled]="!canGoNext() || isLoadingMore()"
+              (click)="next()"
+            >
+              @if (isLoadingMore()) {
+                Loading...
+              } @else {
+                Next
+                <span aria-hidden="true">↓</span>
+              }
+            </button>
+          </nav>
+        </div>
+
+        <aside class="short-details">
+          <span class="short-badge">SHORT PICK</span>
+
+          <h2>{{ video.title }}</h2>
+
+          <a
+            class="channel-link"
+            [routerLink]="['/channel', video.channelId]"
+          >
+            @if (video.channelAvatarUrl) {
+              <img
+                class="channel-avatar"
+                [src]="video.channelAvatarUrl"
+                alt=""
+                loading="lazy"
+              />
+            } @else {
+              <span class="channel-avatar avatar-placeholder">
+                {{ video.channelName.charAt(0).toUpperCase() }}
+              </span>
+            }
+
+            <span>{{ video.channelName }}</span>
+          </a>
+
+          <div class="short-actions">
+            <button
+              type="button"
+              class="action-button"
+              [class.active]="library.isLiked(video.id)"
+              [attr.aria-pressed]="library.isLiked(video.id)"
+              (click)="toggleLike()"
+            >
+              <span aria-hidden="true">♥</span>
+              {{ library.isLiked(video.id) ? 'Liked' : 'Like' }}
+            </button>
+
+            <button
+              type="button"
+              class="action-button"
+              [class.active]="library.isInWatchLater(video.id)"
+              [attr.aria-pressed]="library.isInWatchLater(video.id)"
+              (click)="toggleWatchLater()"
+            >
+              <span aria-hidden="true">＋</span>
+              {{
+                library.isInWatchLater(video.id)
+                  ? 'Saved for later'
+                  : 'Watch later'
+              }}
+            </button>
+          </div>
+
+          @if (video.description) {
+            <p class="short-description">
+              {{ video.description }}
+            </p>
+          }
+
+          <div class="short-links">
+            <a
+              class="watch-page-link"
+              [routerLink]="['/watch', video.youtubeId]"
+            >
+              Open watch page
+            </a>
+
+            <a
+              class="youtube-link"
+              [href]="'https://www.youtube.com/watch?v=' + video.youtubeId"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              Watch on YouTube ↗
+            </a>
+          </div>
+        </aside>
+      </div>
+    } @else {
+      <div class="empty-state">
+        <h2>No shorts found on this page</h2>
+
+        @if (nextPageToken()) {
+          <p>Try the next batch to discover more short videos.</p>
+
+          <button
+            type="button"
+            class="navigation-button"
+            [disabled]="isLoadingMore()"
+            (click)="loadMore()"
+          >
+            {{ isLoadingMore() ? 'Loading...' : 'Find more shorts' }}
+          </button>
+        } @else {
+          <p>Explore other videos or try loading Shorts again.</p>
+
+          <button
+            type="button"
+            class="navigation-button"
+            (click)="loadShorts()"
+          >
+            Reload Shorts
+          </button>
+        }
+      </div>
+    }
+  }
+</section>
