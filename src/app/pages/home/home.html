@@ -1,74 +1,220 @@
-<section class="home-page" aria-labelledby="home-heading">
-  <div class="page-heading">
+<section class="home-page">
+  <header class="home-header">
     <div>
-      <span class="eyebrow">YOUR DAILY DISCOVERY</span>
-      <h1 id="home-heading">Find your next favourite.</h1>
-      <p>Explore popular videos from YouTube in India.</p>
+      <p class="eyebrow">YOUR SCREEN. YOUR CHOICE.</p>
+      <h1>Discover your next favourite.</h1>
+      <p class="page-description">
+        Tamil entertainment, music and little escapes.
+      </p>
+    </div>
+  </header>
+
+  <section class="shorts-section" aria-labelledby="shorts-title">
+    <div class="section-heading">
+      <div>
+        <p class="section-eyebrow">A LITTLE ESCAPE</p>
+        <h2 id="shorts-title">Shorts</h2>
+      </div>
+      <a routerLink="/shorts" class="section-link">
+        Explore Shorts →
+      </a>
     </div>
 
-    <span class="heading-badge">Powered by YouTube</span>
-  </div>
-
-  <div class="category-bar" aria-label="Video categories">
-    @for (category of videoService.categories; track category) {
-      <button
-        type="button"
-        class="category-chip"
-        [class.active]="selectedCategory() === category"
-        [attr.aria-pressed]="selectedCategory() === category"
-        (click)="selectCategory(category)"
-      >
-        {{ category }}
-      </button>
+    @if (shortsError()) {
+      <div class="error-message" role="alert">
+        <p>{{ shortsError() }}</p>
+        <button
+          type="button"
+          [disabled]="shortsLoading()"
+          (click)="loadSection('shorts')"
+        >
+          Try again
+        </button>
+      </div>
     }
-  </div>
 
-  <div class="feed-heading">
-    <h2>
-      {{ selectedCategory() === 'All' ? 'Popular now' : selectedCategory() }}
-    </h2>
-    <span>Discover something worth watching</span>
-  </div>
+    @if (shortsLoading()) {
+      <p role="status">Loading Shorts...</p>
+    } @else {
+      <div class="shorts-row">
+        @for (video of shorts(); track video.id) {
+          <article class="home-short-card">
+            <a
+              class="short-thumbnail-link"
+              [routerLink]="['/watch', video.youtubeId]"
+              [attr.aria-label]="'Watch ' + video.title"
+            >
+              <img
+                [src]="video.thumbnailUrl"
+                [alt]="video.title"
+                loading="lazy"
+              />
+              <span class="short-play-icon" aria-hidden="true">▶</span>
+              <span class="short-label">SHORT</span>
+            </a>
 
-  @if (error()) {
-    <div class="error-panel" role="alert">
-      <div>
-        <h3>Could not load videos</h3>
-        <p>{{ error() }}</p>
+            <h3>
+              <a [routerLink]="['/watch', video.youtubeId]">
+                {{ video.title }}
+              </a>
+            </h3>
+
+            <a
+              class="short-channel"
+              [routerLink]="['/channel', video.channelId]"
+            >
+              {{ video.channelName }}
+            </a>
+
+            @if (video.viewCount !== null) {
+              <p class="short-views">
+                {{ formatViews(video.viewCount) }}
+              </p>
+            }
+          </article>
+        }
       </div>
 
-      <button
-        type="button"
-        class="retry-button"
-        [disabled]="isLoading() || isLoadingMore()"
-        (click)="retry()"
+      @if (!shorts().length && !shortsError()) {
+        <div class="empty-state compact">
+          <p>No Shorts found here yet.</p>
+          <a routerLink="/shorts" class="section-link">
+            Browse Shorts →
+          </a>
+        </div>
+      }
+    }
+  </section>
+
+  <section class="music-section" aria-labelledby="tamil-music-title">
+    <div class="section-heading">
+      <div>
+        <p class="section-eyebrow">ON REPEAT</p>
+        <h2 id="tamil-music-title">Tamil melodies & beats</h2>
+      </div>
+      <a
+        routerLink="/search"
+        [queryParams]="{ q: 'Tamil songs official music video' }"
+        class="section-link"
       >
-        Try again
-      </button>
+        More Tamil songs →
+      </a>
     </div>
-  }
 
-  <div class="video-feed" [attr.aria-busy]="isLoading()">
+    @if (tamilSongsError()) {
+      <div class="error-message" role="alert">
+        <p>{{ tamilSongsError() }}</p>
+        <button
+          type="button"
+          [disabled]="tamilSongsLoading()"
+          (click)="loadSection('tamil')"
+        >
+          Try again
+        </button>
+      </div>
+    }
+
+    @if (tamilSongsLoading()) {
+      <p role="status">Loading Tamil songs...</p>
+    } @else {
+      <div class="video-grid">
+        @for (video of tamilSongs(); track video.id) {
+          <app-video-card [video]="video"></app-video-card>
+        }
+      </div>
+
+      @if (!tamilSongs().length && !tamilSongsError()) {
+        <div class="empty-state compact">
+          <p>No Tamil songs found. Try searching for an artist.</p>
+        </div>
+      }
+    }
+  </section>
+
+  <section class="music-section" aria-labelledby="english-music-title">
+    <div class="section-heading">
+      <div>
+        <p class="section-eyebrow">CHANGE THE MOOD</p>
+        <h2 id="english-music-title">English favourites</h2>
+      </div>
+      <a
+        routerLink="/search"
+        [queryParams]="{ q: 'English pop songs official music video' }"
+        class="section-link"
+      >
+        More English songs →
+      </a>
+    </div>
+
+    @if (englishSongsError()) {
+      <div class="error-message" role="alert">
+        <p>{{ englishSongsError() }}</p>
+        <button
+          type="button"
+          [disabled]="englishSongsLoading()"
+          (click)="loadSection('english')"
+        >
+          Try again
+        </button>
+      </div>
+    }
+
+    @if (englishSongsLoading()) {
+      <p role="status">Loading English songs...</p>
+    } @else {
+      <div class="video-grid">
+        @for (video of englishSongs(); track video.id) {
+          <app-video-card [video]="video"></app-video-card>
+        }
+      </div>
+
+      @if (!englishSongs().length && !englishSongsError()) {
+        <div class="empty-state compact">
+          <p>No English songs found. Try searching for an artist.</p>
+        </div>
+      }
+    }
+  </section>
+
+  <section class="feed-section" aria-labelledby="feed-title">
+    <div class="section-heading">
+      <div>
+        <p class="section-eyebrow">KEEP EXPLORING</p>
+        <h2 id="feed-title">
+          {{
+            selectedCategory() === 'All'
+              ? 'Tamil discoveries'
+              : 'Tamil ' + selectedCategory()
+          }}
+        </h2>
+      </div>
+    </div>
+
+    <nav class="category-bar" aria-label="Video categories">
+      @for (category of categories; track category) {
+        <button
+          type="button"
+          class="category-chip"
+          [class.active]="selectedCategory() === category"
+          [attr.aria-pressed]="selectedCategory() === category"
+          (click)="selectCategory(category)"
+        >
+          {{ category }}
+        </button>
+      }
+    </nav>
+
     @if (isLoading()) {
-      <p class="visually-hidden" role="status">Loading videos...</p>
-
-      <div class="video-grid" aria-hidden="true">
+      <div class="video-grid" aria-busy="true">
         @for (skeleton of skeletons; track skeleton) {
-          <div class="skeleton-card">
+          <div class="skeleton-card" aria-hidden="true">
             <div class="skeleton-thumbnail"></div>
-
-            <div class="skeleton-details">
-              <div class="skeleton-avatar"></div>
-
-              <div class="skeleton-copy">
-                <div class="skeleton-line"></div>
-                <div class="skeleton-line short"></div>
-                <div class="skeleton-line shorter"></div>
-              </div>
-            </div>
+            <div class="skeleton-line"></div>
+            <div class="skeleton-line short"></div>
           </div>
         }
       </div>
+      <p class="sr-only" role="status">Loading videos...</p>
     } @else {
       <div class="video-grid">
         @for (video of videos(); track video.id) {
@@ -76,41 +222,40 @@
         }
       </div>
 
-      @if (!videos().length && !error()) {
-        <div class="empty-state">
-          <h3>No videos available in this category</h3>
-          <p>Choose another category to keep exploring.</p>
-
-          @if (selectedCategory() !== 'All') {
-            <button
-              type="button"
-              class="retry-button"
-              (click)="selectCategory('All')"
-            >
-              Explore all
-            </button>
-          }
-        </div>
-      }
-
-      @if (nextPageToken()) {
-        <div class="load-more-container">
-          <button
-            type="button"
-            class="load-more-button"
-            [disabled]="isLoadingMore()"
-            (click)="loadMore()"
-          >
-            {{ isLoadingMore() ? 'Loading...' : 'Load more videos' }}
+      @if (error()) {
+        <div class="error-message" role="alert">
+          <p>{{ error() }}</p>
+          <button type="button" (click)="retry()">
+            Try again
           </button>
         </div>
       }
 
       @if (isLoadingMore()) {
-        <p class="visually-hidden" role="status">
-          Loading more videos...
-        </p>
+        <div class="empty-state compact" role="status">
+          <p>Loading more videos...</p>
+        </div>
+      } @else if (nextPageToken() && !error()) {
+        <div class="load-more-container">
+          <button
+            type="button"
+            class="load-more-button"
+            (click)="loadMore()"
+          >
+            Load more videos
+          </button>
+        </div>
+      } @else if (!error()) {
+        <div class="empty-state compact">
+          <p>
+            {{
+              videos().length
+                ? 'You have reached the end. Try another category.'
+                : 'No videos found. Try another category.'
+            }}
+          </p>
+        </div>
       }
     }
-  </div>
+  </section>
 </section>

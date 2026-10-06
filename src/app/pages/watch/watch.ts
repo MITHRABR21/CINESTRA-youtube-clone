@@ -38,6 +38,37 @@ export class Watch implements OnDestroy {
   private requestId = 0;
   private destroyed = false;
 
+  private readonly knownArtists = [
+    'Kate Bush',
+    'Anirudh Ravichander',
+    'Anirudh',
+    'A R Rahman',
+    'AR Rahman',
+    'Harris Jayaraj',
+    'Yuvan Shankar Raja',
+    'Ilaiyaraaja',
+    'Dhibu Ninan Thomas',
+    'Santhosh Narayanan',
+    'G V Prakash',
+    'Sid Sriram',
+    'Arijit Singh',
+    'Shreya Ghoshal',
+    'Taylor Swift',
+    'Ed Sheeran',
+    'Ariana Grande',
+    'Dua Lipa',
+    'Charlie Puth',
+    'Ava Max',
+    'Billie Eilish',
+    'Selena Gomez',
+    'The Weeknd',
+    'Bruno Mars',
+    'Justin Bieber',
+    'Coldplay',
+    'BTS',
+    'Blackpink'
+  ];
+
   constructor() {
     this.subscription = this.route.paramMap.subscribe(params => {
       void this.loadVideo(params.get('id') ?? '');
@@ -89,7 +120,6 @@ export class Watch implements OnDestroy {
       }
 
       this.video.set(video);
-
       this.playerUrl.set(
         this.sanitizer.bypassSecurityTrustResourceUrl(
           `https://www.youtube.com/embed/${id}?playsinline=1`
@@ -97,7 +127,7 @@ export class Watch implements OnDestroy {
       );
 
       this.library.recordWatch(video);
-      void this.loadRecommendations(id, requestId);
+      void this.loadRecommendations(video, requestId);
     } catch (error) {
       if (this.isActive(requestId)) {
         this.error.set(
@@ -121,7 +151,6 @@ export class Watch implements OnDestroy {
 
   toggleLike(): void {
     const video = this.video();
-
     if (video) {
       this.library.toggleLike(video);
     }
@@ -129,24 +158,22 @@ export class Watch implements OnDestroy {
 
   toggleWatchLater(): void {
     const video = this.video();
-
     if (video) {
       this.library.toggleWatchLater(video);
     }
   }
 
   toggleDescription(): void {
-    this.descriptionExpanded.update(expanded => !expanded);
+    this.descriptionExpanded.update(value => !value);
   }
 
   togglePlaylistMenu(): void {
-    this.playlistMenuOpen.update(open => !open);
+    this.playlistMenuOpen.update(value => !value);
     this.notice.set('');
   }
 
   addToPlaylist(playlistId: string): void {
     const video = this.video();
-
     if (!video) {
       return;
     }
@@ -158,19 +185,16 @@ export class Watch implements OnDestroy {
 
   createPlaylist(): void {
     const video = this.video();
-
     if (!video) {
       return;
     }
 
     const name = window.prompt('Playlist name');
-
     if (!name?.trim()) {
       return;
     }
 
     const playlist = this.library.createPlaylist(name);
-
     if (playlist) {
       this.library.addToPlaylist(playlist.id, video);
       this.notice.set(`Saved to "${playlist.name}".`);
@@ -186,7 +210,6 @@ export class Watch implements OnDestroy {
 
   formatDate(value: string): string {
     const date = new Date(value);
-
     return Number.isNaN(date.getTime())
       ? ''
       : date.toLocaleDateString('en-IN', {
@@ -201,22 +224,206 @@ export class Watch implements OnDestroy {
   }
 
   private async loadRecommendations(
-    videoId: string,
+    current: Video,
     requestId: number
   ): Promise<void> {
     try {
-      const page = await this.videoService.getHomeVideos();
+      const artist = this.findArtist(current);
 
-      if (this.isActive(requestId)) {
-        this.recommendations.set(
-          page.videos
-            .filter(video => video.id !== videoId)
-            .slice(0, 12)
+      const page = artist
+        ? await this.videoService.searchVideos(
+            `${artist} official songs`
+          )
+        : await this.videoService.getChannelVideos(current.channelId);
+
+      if (!this.isActive(requestId)) {
+        return;
+      }
+
+      let suggestions = this.filterSuggestions(
+        page.videos,
+        current,
+        artist
+      );
+
+      // Try one more batch if repeated uploads filled the first page.
+      if (suggestions.length < 6 && page.nextPageToken) {
+        const nextPage = artist
+          ? await this.videoService.searchVideos(
+              `${artist} official songs`,
+              page.nextPageToken
+            )
+          : await this.videoService.getChannelVideos(
+              current.channelId,
+              page.nextPageToken
+            );
+
+        if (!this.isActive(requestId)) {
+          return;
+        }
+
+        suggestions = this.filterSuggestions(
+          [...suggestions, ...nextPage.videos],
+          current,
+          artist
         );
       }
+
+      this.recommendations.set(suggestions.slice(0, 12));
     } catch {
-      // Playback remains available if recommendations fail.
+      // Playback remains available if suggestions cannot load.
     }
+  }
+
+  private findArtist(video: Video): string {
+    const title = this.normalize(video.title);
+    const channel = this.normalize(video.channelName);
+    const description = this.normalize(
+      video.description.slice(0, 2500)
+    );
+
+    // Prefer artists named in the title or their own channel.
+    for (const source of [title, channel, description]) {
+      const artist = this.knownArtists.find(name =>
+        this.containsPhrase(source, this.normalize(name))
+      );
+
+      if (artist) {
+        return artist;
+      }
+    }
+
+    // Artist channels commonly use a VEVO or Official suffix.
+    if (/\bvevo\b|vevo$|\bofficial\b/i.test(video.channelName)) {
+      return video.channelName
+        .replace(/vevo/gi, '')
+        .replace(/\bofficial\b/gi, '')
+        .trim();
+    }
+
+    return '';
+  }
+
+  private filterSuggestions(
+    videos: Video[],
+    current: Video,
+    artist: string
+  ): Video[] {
+    const seenIds = new Set<string>();
+    const seenSongs = new Set<string>();
+    const artistText = this.normalize(artist);
+
+    return videos.filter(candidate => {
+      if (
+        candidate.youtubeId === current.youtubeId ||
+        seenIds.has(candidate.youtubeId) ||
+        candidate.isShort
+      ) {
+        return false;
+      }
+
+      seenIds.add(candidate.youtubeId);
+
+      if (artistText) {
+        const text = this.normalize(
+          `${candidate.title} ${candidate.channelName} ${
+            candidate.description.slice(0, 1500)
+          }`
+        );
+
+        if (!this.containsPhrase(text, artistText)) {
+          return false;
+        }
+      }
+
+      if (this.isSameSong(current, candidate)) {
+        return false;
+      }
+
+      const songKey = this.songKey(candidate.title);
+
+      if (songKey && seenSongs.has(songKey)) {
+        return false;
+      }
+
+      if (songKey) {
+        seenSongs.add(songKey);
+      }
+
+      return true;
+    });
+  }
+
+  private isSameSong(current: Video, candidate: Video): boolean {
+    const key = this.songKey(current.title);
+
+    if (!key) {
+      return false;
+    }
+
+    const candidateTitle = this.normalize(candidate.title);
+
+    if (this.containsPhrase(candidateTitle, key)) {
+      return true;
+    }
+
+    const words = key.split(' ').filter(word => word.length > 2);
+
+    if (words.length < 2) {
+      return false;
+    }
+
+    const candidateWords = new Set(candidateTitle.split(' '));
+    const matches = words.filter(word => candidateWords.has(word));
+
+    return matches.length / words.length >= 0.8;
+  }
+
+  private songKey(title: string): string {
+    const sections = title.split(/[|｜]/).map(part => part.trim());
+
+    // Handles titles such as "Kate Bush - Running Up That Hill".
+    const artistSection = sections.find(section =>
+      this.knownArtists.some(artist =>
+        this.containsPhrase(
+          this.normalize(section),
+          this.normalize(artist)
+        )
+      ) && /\s[-–—]\s/.test(section)
+    );
+
+    let song = artistSection ?? sections[0] ?? title;
+    const dashParts = song.split(/\s[-–—]\s/);
+
+    if (dashParts.length > 1) {
+      const first = this.normalize(dashParts[0]);
+      const startsWithArtist = this.knownArtists.some(artist =>
+        this.containsPhrase(first, this.normalize(artist))
+      );
+
+      song = startsWithArtist ? dashParts[1] : dashParts[0];
+    }
+
+    song = song
+      .replace(/\([^)]*\)|\[[^\]]*\]/g, ' ')
+      .replace(
+        /\b(?:official|full|video|audio|lyric|lyrics|song|songs|music|hd|uhd|4k|8k|remastered|remix|live|version)\b/gi,
+        ' '
+      );
+
+    return this.normalize(song);
+  }
+
+  private normalize(value: string): string {
+    return value
+      .toLowerCase()
+      .replace(/[^\p{L}\p{N}\s]/gu, ' ')
+      .replace(/\s+/g, ' ')
+      .trim();
+  }
+
+  private containsPhrase(text: string, phrase: string): boolean {
+    return !!phrase && ` ${text} `.includes(` ${phrase} `);
   }
 
   private isActive(requestId: number): boolean {
